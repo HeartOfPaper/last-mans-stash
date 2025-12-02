@@ -1,4 +1,94 @@
-# Last Man's Stash - Development To-Do List
+# Last Man's Stash - Development TODO
+
+**Game**: 4-5 Player Online Multiplayer Heist Board Game  
+**Engine**: Unity + Photon PUN 2  
+**Author**: HeartOfPaper  
+**Repository**: https://github.com/HeartOfPaper/last-mans-stash
+
+---
+
+## 🔀 Git Branching Workflow
+
+### Branch Strategy
+
+**Main Branch**: `main` (protected - only merge from phase branches)
+
+**Phase Branches**: Create a new branch for each phase:
+```
+phase-1-foundation          ✅ MERGED
+phase-2-data-structures     ✅ MERGED
+phase-3-board-system        ⏳ CURRENT
+phase-4-ui-main-menu
+phase-5-networking-setup
+phase-6-lobby-system
+phase-7-card-system
+phase-8-turn-system
+phase-9-game-mechanics
+phase-10-casino-minigame
+phase-11-polish-optimization
+phase-12-testing-bugfixes
+phase-13-audio-vfx
+phase-14-balancing
+phase-15-release-prep
+```
+
+### Workflow Commands
+
+**1. Start New Phase**:
+```bash
+# Create and switch to new phase branch
+git checkout -b phase-3-board-system
+
+# Push branch to GitHub
+git push -u origin phase-3-board-system
+```
+
+**2. During Development**:
+```bash
+# Commit frequently with clear messages
+git add .
+git commit -m "Added BoardManager spatial ordering algorithm"
+git push
+```
+
+**3. Complete Phase**:
+```bash
+# Switch to main and merge
+git checkout main
+git merge phase-3-board-system --no-ff -m "Merge Phase 3: Board System Complete"
+
+# Push merged main
+git push origin main
+
+# Delete local branch (optional)
+git branch -d phase-3-board-system
+
+# Delete remote branch (optional)
+git push origin --delete phase-3-board-system
+```
+
+### Commit Message Format
+
+**Structure**: `[Phase X] Category: Description`
+
+**Examples**:
+- `[Phase 3] Board: Added BoardManager with spatial tile ordering`
+- `[Phase 4] UI: Created MainMenu scene with responsive layout`
+- `[Phase 5] Network: Implemented RPC for player actions`
+- `[Fix] Security: Changed PlayerData methods to internal`
+- `[Docs] Updated README with installation instructions`
+
+**Categories**: Board, UI, Network, Cards, Mechanics, Audio, VFX, Polish, Fix, Docs, Test
+
+---
+
+## 📋 Current Status
+
+**Latest Branch**: `main` (Phase 1 & 2 complete)  
+**Next Branch**: `phase-3-board-system`  
+**Overall Progress**: ~7% (2/15 phases complete)
+
+---
 
 **Legend**: 
 - `[ ]` Not started
