@@ -259,9 +259,9 @@ git push origin --delete phase-3-board-system
 - [x] Create `PayphoneTile.cs` (draw chaos card)
 
 ### Testing
-- [ ] Create test scene with placeholder tiles
-- [ ] Test tile ordering
-- [ ] Verify gizmos show correct path
+- [x] Create test scene with placeholder tiles
+- [x] Test tile ordering
+- [x] Verify gizmos show correct path
 
 ---
 
