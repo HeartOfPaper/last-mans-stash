@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b59ef95b632454ba78bda7b670ba50a8, type: 3}
+  m_Name: Mastermind
+  m_EditorClassIdentifier: Assembly-CSharp::LastMansStash.Player.CharacterProfile
+  characterType: 6
+  characterName: The Mastermind
+  characterDescription: A brilliant strategist who can manipulate the board to their
+    advantage.
+  abilityName: Position Swap
+  abilityDescription: Twice per game, swap your board position with any other player
+    (both players move to each other's tiles).
+  characterPortrait: {fileID: 0}
+  characterModel: {fileID: 0}
+  characterColor: {r: 0.2901961, g: 0.8862745, b: 0.8862745, a: 1}
+  startingMoneyBonus: 0
+  startingCardsBonus: 0
