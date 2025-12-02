@@ -50,13 +50,14 @@ namespace LastMansStash.Managers
 
         /// <summary>
         /// Find all tiles in scene with TileIdentifier and order them spatially
+        /// Internal to prevent unauthorized board manipulation
         /// </summary>
-        public void FindAndOrderTiles()
+        internal void FindAndOrderTiles()
         {
             Debug.Log("[BoardManager] Finding tiles in scene...");
 
-            // Find all TileIdentifier components
-            TileIdentifier[] tileIdentifiers = FindObjectsOfType<TileIdentifier>();
+            // Find all TileIdentifier components (using newer Unity API)
+            TileIdentifier[] tileIdentifiers = FindObjectsByType<TileIdentifier>(FindObjectsSortMode.None);
 
             if (tileIdentifiers.Length == 0)
             {
@@ -91,9 +92,20 @@ namespace LastMansStash.Managers
 
             totalTileCount = boardTiles.Count;
 
+            // Safety validation: Ensure Start tile is at index 0
+            if (boardTiles.Count > 0 && boardTiles[0].TileType != TileType.Start)
+            {
+                Debug.LogError($"[BoardManager] CRITICAL ERROR: Start tile is not at index 0! Found {boardTiles[0].TileType} instead.");
+                Debug.LogError("[BoardManager] Board initialization failed. Check tile positions.");
+                boardTiles.Clear();
+                totalTileCount = 0;
+                return;
+            }
+
             Debug.Log($"[BoardManager] Board initialized with {totalTileCount} tiles");
             Debug.Log($"[BoardManager] Board center: {boardCenter}");
             Debug.Log($"[BoardManager] Tile order: {string.Join(" → ", boardTiles.Select(t => t.TileType))}");
+            Debug.Log("[BoardManager] ✓ Validation passed: Start tile confirmed at index 0");
         }
 
         /// <summary>
@@ -120,7 +132,7 @@ namespace LastMansStash.Managers
             foreach (TileIdentifier tile in tiles)
             {
                 Vector3 directionFromCenter = tile.transform.position - center;
-                // Calculate angle in degrees (0-360)
+                // Calculate angle in degrees (0-360) in XZ plane
                 float angle = Mathf.Atan2(directionFromCenter.z, directionFromCenter.x) * Mathf.Rad2Deg;
                 if (angle < 0) angle += 360f;
                 tileAngles[tile] = angle;
@@ -137,8 +149,21 @@ namespace LastMansStash.Managers
                 tileAngles[tile] = relativeAngle;
             }
 
-            // Sort by angle (clockwise)
-            List<TileIdentifier> sorted = tiles.OrderBy(t => tileAngles[t]).ToList();
+            // Sort by angle (clockwise from Start at 0°)
+            // In XZ plane (top-down), angles decrease as we go clockwise from Start
+            // So we need descending order: 0° → 315° → 270° → 225° → etc.
+            List<TileIdentifier> sorted = tiles.OrderByDescending(t => tileAngles[t]).ToList();
+
+            // Rotate list so Start tile is at index 0
+            // (After sorting by descending, Start with 0° is last)
+            int startIndex = sorted.IndexOf(startTile);
+            if (startIndex > 0)
+            {
+                // Rotate: take items from startIndex to end, then items from 0 to startIndex
+                var rotated = sorted.GetRange(startIndex, sorted.Count - startIndex);
+                rotated.AddRange(sorted.GetRange(0, startIndex));
+                sorted = rotated;
+            }
 
             return sorted;
         }
@@ -175,9 +200,10 @@ namespace LastMansStash.Managers
 
         /// <summary>
         /// Rebuild the board (useful for testing or dynamic boards)
+        /// Internal to prevent unauthorized board rebuilding
         /// </summary>
         [ContextMenu("Rebuild Board")]
-        public void RebuildBoard()
+        internal void RebuildBoard()
         {
             FindAndOrderTiles();
         }

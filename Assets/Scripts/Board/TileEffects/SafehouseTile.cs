@@ -19,7 +19,7 @@ namespace LastMansStash.Board.TileEffects
             description = "Draw 1 Movement Card";
         }
 
-        public override void OnLanded(PlayerData player)
+        internal override void OnLanded(PlayerData player)
         {
             if (isHazard)
             {
@@ -45,15 +45,16 @@ namespace LastMansStash.Board.TileEffects
             }
         }
 
-        public override void OnPassed(PlayerData player)
+        internal override void OnPassed(PlayerData player)
         {
             // No effect when passing
         }
 
         /// <summary>
         /// Set Hazard mode (called by Sting Operation chaos card)
+        /// Internal to prevent unauthorized tile state changes
         /// </summary>
-        public void SetHazard(bool hazard)
+        internal void SetHazard(bool hazard)
         {
             isHazard = hazard;
             tileName = hazard ? "Hazard (Sting Operation)" : "Safehouse";

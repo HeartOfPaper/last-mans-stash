@@ -17,7 +17,7 @@ namespace LastMansStash.Board.TileEffects
             description = "Draw and resolve 1 Chaos Card";
         }
 
-        public override void OnLanded(PlayerData player)
+        internal override void OnLanded(PlayerData player)
         {
             Debug.Log($"[PayphoneTile] {player.PlayerName} landed on Payphone");
             Debug.Log("[PayphoneTile] Drawing 1 Chaos Card...");
@@ -35,7 +35,7 @@ namespace LastMansStash.Board.TileEffects
             // - The Confession (special trigger: 2 Humans + 3+ Zombies)
         }
 
-        public override void OnPassed(PlayerData player)
+        internal override void OnPassed(PlayerData player)
         {
             // No effect when passing
         }

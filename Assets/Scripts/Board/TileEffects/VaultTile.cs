@@ -17,7 +17,7 @@ namespace LastMansStash.Board.TileEffects
             description = "Steal 5 bucks from another player (8 for Grifter)";
         }
 
-        public override void OnLanded(PlayerData player)
+        internal override void OnLanded(PlayerData player)
         {
             Debug.Log($"[VaultTile] {player.PlayerName} landed on Vault");
 
@@ -54,7 +54,7 @@ namespace LastMansStash.Board.TileEffects
             }
         }
 
-        public override void OnPassed(PlayerData player)
+        internal override void OnPassed(PlayerData player)
         {
             // No effect when passing
         }

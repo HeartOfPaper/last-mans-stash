@@ -16,7 +16,7 @@ namespace LastMansStash.Board.TileEffects
             description = "Trigger Casino mini-game";
         }
 
-        public override void OnLanded(PlayerData player)
+        internal override void OnLanded(PlayerData player)
         {
             Debug.Log($"[CasinoTile] {player.PlayerName} landed on Casino - Starting mini-game!");
             
@@ -25,7 +25,7 @@ namespace LastMansStash.Board.TileEffects
             Debug.Log("[CasinoTile] Casino mini-game will be implemented in Phase 10");
         }
 
-        public override void OnPassed(PlayerData player)
+        internal override void OnPassed(PlayerData player)
         {
             // No effect when passing
         }

@@ -237,26 +237,26 @@ git push origin --delete phase-3-board-system
 ## Phase 3: Board System
 
 ### Board Manager
-- [ ] Create `BoardManager.cs`
-- [ ] Implement tile finding (FindObjectsOfType<TileIdentifier>)
-- [ ] Implement spatial ordering (clockwise from Start)
-- [ ] Implement board center calculation
-- [ ] Add visual debugging (gizmos)
+- [x] Create `BoardManager.cs`
+- [x] Implement tile finding (FindObjectsOfType<TileIdentifier>)
+- [x] Implement spatial ordering (clockwise from Start)
+- [x] Implement board center calculation
+- [x] Add visual debugging (gizmos)
 
 ### Tile Base System
-- [ ] Create `TileBase.cs` abstract class with:
-  - [ ] OnLanded() method
-  - [ ] OnPassed() method
-  - [ ] Tile type property
+- [x] Create `TileBase.cs` abstract class with:
+  - [x] OnLanded() method
+  - [x] OnPassed() method
+  - [x] Tile type property
 
 ### Tile Implementations
-- [ ] Create `StartTile.cs` (gain 5 on land, 3 on pass)
-- [ ] Create `BlankTile.cs` (no effect)
-- [ ] Create `CasinoTile.cs` (trigger mini-game)
-- [ ] Create `SafehouseTile.cs` (draw movement card)
-- [ ] Create `VaultTile.cs` (steal bucks)
-- [ ] Create `PawnShopTile.cs` (draw dagger card)
-- [ ] Create `PayphoneTile.cs` (draw chaos card)
+- [x] Create `StartTile.cs` (gain 5 on land, 3 on pass)
+- [x] Create `BlankTile.cs` (no effect)
+- [x] Create `CasinoTile.cs` (trigger mini-game)
+- [x] Create `SafehouseTile.cs` (draw movement card)
+- [x] Create `VaultTile.cs` (steal bucks)
+- [x] Create `PawnShopTile.cs` (draw dagger card)
+- [x] Create `PayphoneTile.cs` (draw chaos card)
 
 ### Testing
 - [ ] Create test scene with placeholder tiles

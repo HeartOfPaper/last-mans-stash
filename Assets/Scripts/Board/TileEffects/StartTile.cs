@@ -17,7 +17,7 @@ namespace LastMansStash.Board.TileEffects
             description = "Land: Gain 5 bucks | Pass: Gain 3 bucks";
         }
 
-        public override void OnLanded(PlayerData player)
+        internal override void OnLanded(PlayerData player)
         {
             Debug.Log($"[StartTile] {player.PlayerName} landed on Start tile");
             
@@ -27,7 +27,7 @@ namespace LastMansStash.Board.TileEffects
             Debug.Log($"[StartTile] {player.PlayerName} gained {Core.GameConstants.START_TILE_LAND_MONEY} bucks (Land bonus)");
         }
 
-        public override void OnPassed(PlayerData player)
+        internal override void OnPassed(PlayerData player)
         {
             Debug.Log($"[StartTile] {player.PlayerName} passed Start tile");
             

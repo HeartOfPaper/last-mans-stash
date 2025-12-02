@@ -23,15 +23,17 @@ namespace LastMansStash.Board
 
         /// <summary>
         /// Called when a player lands exactly on this tile
+        /// Internal to prevent unauthorized tile effect triggering
         /// </summary>
         /// <param name="player">The player who landed</param>
-        public abstract void OnLanded(PlayerData player);
+        internal abstract void OnLanded(PlayerData player);
 
         /// <summary>
         /// Called when a player passes this tile without landing
+        /// Internal to prevent unauthorized tile effect triggering
         /// </summary>
         /// <param name="player">The player who passed</param>
-        public abstract void OnPassed(PlayerData player);
+        internal abstract void OnPassed(PlayerData player);
 
         /// <summary>
         /// Can this tile be landed on? (Some tiles might be disabled)

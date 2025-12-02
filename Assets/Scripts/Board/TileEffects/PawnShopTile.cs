@@ -17,7 +17,7 @@ namespace LastMansStash.Board.TileEffects
             description = "Draw 1 Dagger Card";
         }
 
-        public override void OnLanded(PlayerData player)
+        internal override void OnLanded(PlayerData player)
         {
             Debug.Log($"[PawnShopTile] {player.PlayerName} landed on Pawn Shop");
 
@@ -46,7 +46,7 @@ namespace LastMansStash.Board.TileEffects
             }
         }
 
-        public override void OnPassed(PlayerData player)
+        internal override void OnPassed(PlayerData player)
         {
             // No effect when passing
         }

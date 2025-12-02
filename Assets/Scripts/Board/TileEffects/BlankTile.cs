@@ -16,13 +16,13 @@ namespace LastMansStash.Board.TileEffects
             description = "No effect";
         }
 
-        public override void OnLanded(PlayerData player)
+        internal override void OnLanded(PlayerData player)
         {
             // No effect
             Debug.Log($"[BlankTile] {player.PlayerName} landed on a Blank tile - no effect");
         }
 
-        public override void OnPassed(PlayerData player)
+        internal override void OnPassed(PlayerData player)
         {
             // No effect
         }
