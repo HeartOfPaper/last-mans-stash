@@ -48,7 +48,7 @@ namespace LastMansStash.Networking
             UpdateConnectionState();
             
             // Find RoomManager
-            roomManager = FindObjectOfType<RoomManager>();
+            roomManager = FindFirstObjectByType<RoomManager>();
         }
 
         /// <summary>

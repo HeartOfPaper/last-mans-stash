@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using Photon.Realtime;
+using Photon.Pun;
 
 namespace LastMansStash.UI.Lobby
 {
@@ -18,9 +19,10 @@ namespace LastMansStash.UI.Lobby
         [SerializeField] private Transform playerListContainer;
         [SerializeField] private GameObject playerSlotPrefab;
         [SerializeField] private TextMeshProUGUI playerCountText;
+        [SerializeField] private TextMeshProUGUI readyStatusText; // "Starting when ready [X/Y]" or countdown
 
         [Header("Buttons")]
-        [SerializeField] private Button startGameButton;
+        [SerializeField] private Button readyButton;
         [SerializeField] private Button leaveRoomButton;
 
         [Header("Loading")]
@@ -30,14 +32,15 @@ namespace LastMansStash.UI.Lobby
         private Managers.LobbyManager manager;
         private List<GameObject> playerSlots = new List<GameObject>();
         private const int MAX_PLAYERS = 5;
+        private int minPlayersToStart = 4; // Set by LobbyManager
 
         private void Awake()
         {
-            manager = FindObjectOfType<Managers.LobbyManager>();
+            manager = FindFirstObjectByType<Managers.LobbyManager>();
 
-            // Setup button callbacks
-            if (startGameButton != null)
-                startGameButton.onClick.AddListener(() => manager?.OnStartGameClicked());
+            // Setup button callbacks - Ready button instead of Start
+            if (readyButton != null)
+                readyButton.onClick.AddListener(() => manager?.OnReadyToggled());
             
             if (leaveRoomButton != null)
                 leaveRoomButton.onClick.AddListener(() => manager?.OnLeaveRoomClicked());
@@ -59,6 +62,14 @@ namespace LastMansStash.UI.Lobby
         }
 
         /// <summary>
+        /// Set minimum players required to start (called by LobbyManager)
+        /// </summary>
+        public void SetMinPlayersToStart(int minPlayers)
+        {
+            minPlayersToStart = minPlayers;
+        }
+
+        /// <summary>
         /// Update player list with current players in room
         /// </summary>
         public void UpdatePlayerList(List<Photon.Realtime.Player> players)
@@ -74,6 +85,9 @@ namespace LastMansStash.UI.Lobby
             // Clear existing slots
             ClearPlayerSlots();
 
+            // Get ready system
+            var readySystem = FindFirstObjectByType<LastMansStash.Networking.ReadySystem>();
+
             // Create slots for each player
             for (int i = 0; i < MAX_PLAYERS; i++)
             {
@@ -83,12 +97,13 @@ namespace LastMansStash.UI.Lobby
                 {
                     // Occupied slot
                     Photon.Realtime.Player player = players[i];
-                    SetPlayerSlot(slot, player.NickName, player.IsMasterClient);
+                    bool isReady = readySystem?.GetPlayerReady(player) ?? false;
+                    SetPlayerSlot(slot, player.NickName, player.IsMasterClient, isReady);
                 }
                 else
                 {
                     // Empty slot
-                    SetPlayerSlot(slot, "Waiting for player...", false, true);
+                    SetPlayerSlot(slot, "Waiting for player...", false, false, true);
                 }
 
                 playerSlots.Add(slot);
@@ -98,6 +113,30 @@ namespace LastMansStash.UI.Lobby
             if (playerCountText != null)
             {
                 playerCountText.text = $"{players.Count}/{MAX_PLAYERS} Players";
+            }
+
+            // Update readyStatusText
+            if (readyStatusText != null)
+            {
+                // Check if we have minimum players
+                if (players.Count < minPlayersToStart)
+                {
+                    // Not enough players
+                    readyStatusText.text = $"<size=28><color=#888888>Waiting for players... </color></size>";
+                }
+                else
+                {
+                    // Enough players - show ready count
+                    int readyCount = 0;
+                    foreach (var player in players)
+                    {
+                        if (readySystem?.GetPlayerReady(player) ?? false)
+                        {
+                            readyCount++;
+                        }
+                    }
+                    readyStatusText.text = $"<size=28>Starting when ready [{readyCount}/{players.Count}]</size>";
+                }
             }
         }
 
@@ -120,7 +159,7 @@ namespace LastMansStash.UI.Lobby
             return slot;
         }
 
-        private void SetPlayerSlot(GameObject slot, string playerName, bool isHost, bool isEmpty = false)
+        private void SetPlayerSlot(GameObject slot, string playerName, bool isHost, bool isReady, bool isEmpty = false)
         {
             // Find text component
             TextMeshProUGUI nameText = slot.GetComponentInChildren<TextMeshProUGUI>();
@@ -133,7 +172,8 @@ namespace LastMansStash.UI.Lobby
                 else
                 {
                     string hostTag = isHost ? " <color=#FFD700>[HOST]</color>" : "";
-                    nameText.text = $"{playerName}{hostTag}";
+                    string readyIndicator = isReady ? " <color=#00FF00>[READY]</color>" : "";
+                    nameText.text = $"{playerName}{hostTag}{readyIndicator}";
                 }
             }
 
@@ -151,13 +191,102 @@ namespace LastMansStash.UI.Lobby
         }
 
         /// <summary>
-        /// Show/hide Start Game button (host only)
+        /// Show/hide ready button
         /// </summary>
-        public void SetStartButtonVisible(bool visible)
+        public void SetReadyButtonVisible(bool visible)
         {
-            if (startGameButton != null)
+            if (readyButton != null)
             {
-                startGameButton.gameObject.SetActive(visible);
+                readyButton.gameObject.SetActive(visible);
+            }
+        }
+
+        /// <summary>
+        /// Update ready button text and color based on local player ready state
+        /// </summary>
+        public void UpdateReadyButton(bool isReady)
+        {
+            if (readyButton != null)
+            {
+                // Update text
+                var buttonText = readyButton.GetComponentInChildren<TextMeshProUGUI>();
+                if (buttonText != null)
+                {
+                    buttonText.text = isReady ? "UNREADY" : "READY";
+                }
+
+                // Update color using Image component
+                var buttonImage = readyButton.GetComponent<Image>();
+                if (buttonImage != null)
+                {
+                    if (isReady)
+                    {
+                        // Green when ready
+                        buttonImage.color = new Color(0f, 0.7f, 0f, 1f);
+                    }
+                    else
+                    {
+                        // Red when not ready
+                        buttonImage.color = new Color(0.8f, 0f, 0f, 1f);
+                    }
+                }
+
+                // Also update ColorBlock for hover effects
+                var colors = readyButton.colors;
+                if (isReady)
+                {
+                    // Green colors
+                    colors.normalColor = new Color(0f, 0.7f, 0f, 1f);
+                    colors.highlightedColor = new Color(0f, 0.85f, 0f, 1f);
+                    colors.pressedColor = new Color(0f, 0.5f, 0f, 1f);
+                }
+                else
+                {
+                    // Red colors
+                    colors.normalColor = new Color(0.8f, 0f, 0f, 1f);
+                    colors.highlightedColor = new Color(0.9f, 0.1f, 0.1f, 1f);
+                    colors.pressedColor = new Color(0.6f, 0f, 0f, 1f);
+                }
+                readyButton.colors = colors;
+            }
+        }
+
+        /// <summary>
+        /// Show countdown timer
+        /// </summary>
+        public void UpdateCountdown(float remainingTime)
+        {
+            if (readyStatusText != null)
+            {
+                int seconds = Mathf.CeilToInt(remainingTime);
+                readyStatusText.text = $"<color=#FFD700><size=48>Starting in {seconds}...</size></color>";
+            }
+        }
+
+        /// <summary>
+        /// Hide countdown and restore ready count
+        /// </summary>
+        public void HideCountdown()
+        {
+            if (readyStatusText != null)
+            {
+                // Restore ready count display
+                var readySystem = FindFirstObjectByType<LastMansStash.Networking.ReadySystem>();
+                int playerCount = PhotonNetwork.CurrentRoom?.PlayerCount ?? 0;
+                int readyCount = 0;
+                
+                if (PhotonNetwork.CurrentRoom != null && readySystem != null)
+                {
+                    foreach (var player in PhotonNetwork.CurrentRoom.Players.Values)
+                    {
+                        if (readySystem.GetPlayerReady(player))
+                        {
+                            readyCount++;
+                        }
+                    }
+                }
+                
+                readyStatusText.text = $"<size=28>Starting when ready [{readyCount}/{playerCount}]</size>";
             }
         }
 

@@ -12,7 +12,12 @@ namespace LastMansStash.Managers
         [Header("Dependencies")]
         [SerializeField] private LastMansStash.UI.Lobby.LobbyUI lobbyUI;
 
+        [Header("Ready System Settings")]
+        [Tooltip("Minimum players to start (2 for testing, 4 for production)")]
+        [SerializeField] private int minPlayersToStart = 4;
+
         private Networking.GameNetworkManager networkManager;
+        private Networking.ReadySystem readySystem;
 
         private void Awake()
         {
@@ -21,6 +26,34 @@ namespace LastMansStash.Managers
             if (lobbyUI == null)
             {
                 lobbyUI = FindObjectOfType<LastMansStash.UI.Lobby.LobbyUI>();
+            }
+
+            // Get or create ReadySystem
+            readySystem = GetComponent<Networking.ReadySystem>();
+            if (readySystem == null)
+            {
+                readySystem = gameObject.AddComponent<Networking.ReadySystem>();
+            }
+            
+            // Configure ReadySystem
+            readySystem.minPlayersToStart = minPlayersToStart;
+
+            // Subscribe to ready system events
+            readySystem.OnPlayerReadyChanged += HandlePlayerReadyChanged;
+            readySystem.OnCountdownTick += HandleCountdownTick;
+            readySystem.OnCountdownCancelled += HandleCountdownCancelled;
+            readySystem.OnCountdownComplete += HandleCountdownComplete;
+        }
+
+        private void OnDestroy()
+        {
+            // Unsubscribe from ready system events to prevent memory leaks
+            if (readySystem != null)
+            {
+                readySystem.OnPlayerReadyChanged -= HandlePlayerReadyChanged;
+                readySystem.OnCountdownTick -= HandleCountdownTick;
+                readySystem.OnCountdownCancelled -= HandleCountdownCancelled;
+                readySystem.OnCountdownComplete -= HandleCountdownComplete;
             }
         }
 
@@ -50,6 +83,12 @@ namespace LastMansStash.Managers
 
             Debug.Log($"[LobbyManager] Lobby initialized - Room: {PhotonNetwork.CurrentRoom.Name}");
             
+            // Configure UI with settings
+            if (lobbyUI != null)
+            {
+                lobbyUI.SetMinPlayersToStart(minPlayersToStart);
+            }
+            
             // Update UI with current room state
             UpdateUI();
         }
@@ -75,36 +114,23 @@ namespace LastMansStash.Managers
             Debug.Log($"[LobbyManager] Updating UI with {players.Count} players");
             lobbyUI.UpdatePlayerList(players);
 
-            // Update start button visibility (host only)
-            lobbyUI.SetStartButtonVisible(PhotonNetwork.IsMasterClient);
+            // Update ready button visibility (always show)
+            lobbyUI.SetReadyButtonVisible(true);
+            
+            // Update ready button text based on local player state
+            bool isLocalPlayerReady = readySystem?.GetPlayerReady(PhotonNetwork.LocalPlayer) ?? false;
+            lobbyUI.UpdateReadyButton(isLocalPlayerReady);
         }
 
         #region Button Callbacks
 
-        public void OnStartGameClicked()
+        public void OnReadyToggled()
         {
-            if (!PhotonNetwork.IsMasterClient)
-            {
-                Debug.LogWarning("[LobbyManager] Only host can start the game");
-                return;
-            }
-
-            // Check minimum players (TODO: Set this to 4 in Phase 6)
-            if (PhotonNetwork.CurrentRoom.PlayerCount < 1)
-            {
-                Debug.LogWarning("[LobbyManager] Need at least 1 player to start");
-                return;
-            }
-
-            Debug.Log("[LobbyManager] Starting game...");
+            Debug.Log("[LobbyManager] Ready toggled");
+            readySystem?.ToggleReady();
             
-            // TODO: Close room so no new players can join
-            PhotonNetwork.CurrentRoom.IsOpen = false;
-            PhotonNetwork.CurrentRoom.IsVisible = false;
-
-            // TODO: Load Draft scene (Phase 6)
-            // For now, just log
-            Debug.Log("[LobbyManager] Would transition to Draft scene (Phase 6)");
+            // Update UI immediately
+            UpdateUI();
         }
 
         public void OnLeaveRoomClicked()
@@ -165,6 +191,58 @@ namespace LastMansStash.Managers
         }
 
         #endregion
+
+        #region Ready System Event Handlers
+
+        private void HandlePlayerReadyChanged(int actorNumber, bool isReady)
+        {
+            Debug.Log($"[LobbyManager] Player {actorNumber} ready state: {isReady}");
+            UpdateUI();
+        }
+
+        private void HandleCountdownTick(float remainingTime)
+        {
+            if (lobbyUI != null)
+            {
+                lobbyUI.UpdateCountdown(remainingTime);
+            }
+        }
+
+        private void HandleCountdownCancelled()
+        {
+            Debug.Log("[LobbyManager] Countdown cancelled");
+            if (lobbyUI != null)
+            {
+                lobbyUI.HideCountdown();
+            }
+        }
+
+        private void HandleCountdownComplete()
+        {
+            Debug.Log("[LobbyManager] Countdown complete - starting game!");
+            
+            if (lobbyUI != null)
+            {
+                lobbyUI.HideCountdown();
+            }
+
+            // TODO: Load Draft scene (Phase 6)
+            Debug.Log("[LobbyManager] Would load Draft scene here");
+        }
+
+        #endregion
+
+        private void OnDestroy()
+        {
+            // Unsubscribe from ready system events
+            if (readySystem != null)
+            {
+                readySystem.OnPlayerReadyChanged -= HandlePlayerReadyChanged;
+                readySystem.OnCountdownTick -= HandleCountdownTick;
+                readySystem.OnCountdownCancelled -= HandleCountdownCancelled;
+                readySystem.OnCountdownComplete -= HandleCountdownComplete;
+            }
+        }
 
         private void ReturnToMainMenu()
         {
